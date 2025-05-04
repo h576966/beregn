@@ -7,10 +7,12 @@
 
 import pandas as pd
 import streamlit as st
+import os
 
 
 from openai import OpenAI
-client = OpenAI()
+#client = OpenAI()
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 st.markdown("Skriv inn hva du har spist, så estimerer vi kalorier og proteiner.")
 # Multiline input — each line = one meal
