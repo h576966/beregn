@@ -1,59 +1,22 @@
-#file_path = 'Matvaretabellen.csv'
-
-#df = pd.read_csv(file_path)
-
-#print(df.columns)
-
-
-import pandas as pd
 import streamlit as st
-import os
+from bmi_calculator import calculate_bmi
+from food_log import food_log_input
 
+# Load custom CSS
+with open("style.css") as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-from openai import OpenAI
-#client = OpenAI()
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    
+def main():
+    st.title("Beregn.no version 0.2")
+    
+    # Create tabs for different sections
+    tabs = st.sidebar.radio("Select a section", ["Food Log", "BMI Calculator"])
 
-st.markdown("Skriv inn hva du har spist, så estimerer vi kalorier og proteiner.")
-# Multiline input — each line = one meal
-meals_input = st.text_area("Måltider", height=200) #food_input = st.text_area("")
+    if tabs == "Food Log":
+        food_log_input()
+    elif tabs == "BMI Calculator":
+        calculate_bmi()
 
-if st.button("Beregn"):
-    meals = [line.strip() for line in meals_input.splitlines() if line.strip()]
-
-    if not meals:
-        st.warning("Skriv inn minst ett måltid.")
-        st.stop()
-
-    # Compose GPT prompt
-    formatted_meals = "\n".join(f"{i+1}. {meal}" for i, meal in enumerate(meals))
-    prompt = f"""
-        Du er en ernæringsassistent og skal beregne kalori- og proteininntak per måltid basert på informasjon fra Matvaretabellen.no.  
-        Hvert måltid er på én linje nedenfor. Gi separate estimater for hvert måltid.  
-        Oppsummer også totalen til slutt. Vær så presis som mulig.
-
-        Svar på norsk, og bruk følgende format:
-
-        Måltid 1: <antall> kcal, <antall> g protein  
-        Måltid 2: ...  
-        ...  
-        Totalt: <antall> kcal, <antall> g protein
-
-        Måltider:
-        {formatted_meals}
-        """
-    try:
-        
-
-        response = client.responses.create(
-            model="gpt-4.1",  
-            input=prompt
-            
-        )
-        #output = response.choices[0].message.content
-        st.subheader("Estimert næringsinnhold:")
-        st.write(response.output_text)
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-
-
+if __name__ == "__main__":
+    main()
